@@ -1,0 +1,35 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stop timer</title>
+<style>
+  body { margin: 0; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+         background: #f3eee2; color: #3d4450; font: 20px system-ui, sans-serif; text-align: center; padding: 16px; box-sizing: border-box; }
+  button { width: min(80vw, 340px); height: min(80vw, 340px); border-radius: 50%; border: 0; background: #b3392f; color: #fff;
+           font: bold 40px system-ui, sans-serif; }
+  button:disabled { background: #999; }
+  p { min-height: 2em; }
+</style>
+<button id="stop">Stop timer</button>
+<p id="note" role="status"></p>
+<script>
+  // The private topic is in the link's # part, which browsers don't send to the page's host.
+  const settings = new URLSearchParams(location.hash.slice(1));
+  const topic = settings.get("topic");
+  const server = settings.get("server") || "https://ntfy.sh";
+  const note = document.getElementById("note");
+  const button = document.getElementById("stop");
+  if (!topic) { button.disabled = true; note.textContent = "This link is missing its details."; }
+  button.onclick = async () => {
+    button.disabled = true;
+    note.textContent = "Stopping the timer...";
+    try {
+      const reply = await fetch(`${server}/${topic}`, { method: "POST", body: "stop" });
+      if (!reply.ok) throw new Error();
+      note.textContent = "Done.";
+    } catch {
+      button.disabled = false;
+      note.textContent = "That didn't go through. Try again.";
+    }
+  };
+</script>
